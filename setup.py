@@ -20,6 +20,7 @@ setup(
     long_description=long_description,
     test_suite='nose.collector',
 #    setup_requires=['nose'],
+    package_data={'': ['yuicompressor-2.4.6.jar']},
     classifiers=[
         'License :: OSI Approved :: BSD License',
     ],
