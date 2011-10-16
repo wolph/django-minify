@@ -25,7 +25,7 @@ class Cache(object):
         self.read()
     
     def read(self):
-        if os.path.isfile(self.cache_file):
+        if os.path.isfile(self.cache_file) and settings.FROM_CACHE:
             self._cache = pickle.load(open(self.cache_file))
         else:
             self._cache = {}
