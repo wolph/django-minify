@@ -48,13 +48,10 @@ class Setting(object):
     
     def _get(self, settings, key):
         prefixed_key = self.prefix + key
-        print 'key', prefixed_key
         if hasattr(django_settings, prefixed_key):
-            print 'got %r from django settings' % key
             return getattr(django_settings, prefixed_key)
         
         else:
-            print 'getting %r from local/default settings' % key
             for settings in (local_settings, default_settings):
                 if hasattr(settings, key):
                     return getattr(settings, key)

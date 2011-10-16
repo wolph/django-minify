@@ -16,7 +16,10 @@ setup(
     url='https://github.com/WoLpH/django-minify',
     license = 'BSD',
     install_requires=['python-utils>=1.0'],
-    packages=['django_minify'],
+    packages=[
+        'django_minify',
+        'django_minify.templatetags',
+    ],
     long_description=long_description,
     test_suite='nose.collector',
 #    setup_requires=['nose'],

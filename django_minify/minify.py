@@ -119,14 +119,12 @@ class Minify(object):
 
     def _generate_combined_file(self, filename, files):
         with portalocker.Lock(filename + '.tmp', timeout=MAX_WAIT) as fh:
-            #gzfh = gzip.open(filename + '.gz.tmp', 'wb')
             for file_ in files:
                 read_fh = open(file_)
 
                 # Add the spaceless version to the output
                 data = SpacelessMiddleware.strip_content_safe(read_fh.read())
                 print >>fh, data
-                #print >>gzfh, data
                 read_fh.close()
 
             name = os.path.splitext(os.path.split(filename)[1])[0]
@@ -144,10 +142,7 @@ class Minify(object):
                 raise TypeError('Extension %r is not supported'
                     % self.extension)
 
-            #gzfh.close()
-
         os.rename(filename + '.tmp', filename)
-        #os.rename(filename + '.gz.tmp', filename + '.gz')
         return filename
     
     def get_minified_filename(self):
@@ -184,7 +179,6 @@ class Minify(object):
 
 class MinifyCss(Minify):
     extension = 'css'
-    print 'media root', settings.MEDIA_ROOT
     COMPRESSION_COMMAND = settings.CSS_COMPRESSION_COMMAND
     root_dir = os.path.join(settings.MEDIA_ROOT, extension)
     cache_dir = os.path.join(root_dir, 'cache')
