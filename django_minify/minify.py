@@ -40,6 +40,9 @@ class Cache(object):
         self._cache[key] = value
         self.write()
 
+    def __contains__(self, key):
+        return key in self._cache
+
 
 class Minify(object):
     COMPRESSION_COMMAND = None
