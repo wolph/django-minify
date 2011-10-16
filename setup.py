@@ -8,17 +8,18 @@ else:
 
 setup(
     name = 'django-minify',
-    version = '1.4',
+    version = '1.0',
     author = 'Rick van Hattem',
     author_email = 'Rick.van.Hattem@Fawo.nl',
     description = '''django-minify is a django app that combines and minifies
         css and javascript files.''',
     url='https://github.com/WoLpH/django-minify',
     license = 'BSD',
+    install_requires=['python-utils>=1.0'],
     packages=['django_minify'],
     long_description=long_description,
     test_suite='nose.collector',
-    setup_requires=['nose'],
+#    setup_requires=['nose'],
     classifiers=[
         'License :: OSI Approved :: BSD License',
     ],
