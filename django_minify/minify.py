@@ -55,9 +55,9 @@ class DummyCache(object):
 
 
 if settings.DEBUG:
-    cache = DummyCache
+    Cache = DummyCache
 else:
-    cache = FileCache
+    Cache = FileCache
 
 
 class Minify(object):
