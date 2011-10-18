@@ -82,13 +82,13 @@ class IncludeExtension(MinifyExtension):
             drop_needle=True,
         ))
 
-        base_path = urlparse.urljoin(settings.MEDIA_URL, self.extension, 'original')
+        base_path = '/'.join([settings.MEDIA_URL, self.extension, 'original'])
         
         output_nodes = []
         if settings.DEBUG:
             for include in includes:
                 minifier = self.Minifier([include])
-                html = self.template % urlparse.urljoin(base_path, include)
+                html = self.template % '/'.join([base_path, include])
                 output_nodes.append(nodes.TemplateData(html))
 
         else:
