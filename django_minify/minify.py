@@ -2,8 +2,6 @@ from __future__ import with_statement
 import os
 import subprocess
 from django_minify.conf import settings
-from django.core.files.base import ContentFile
-from framework import storage
 from framework.middleware.spaceless import SpacelessMiddleware
 import gzip
 import portalocker
@@ -19,7 +17,7 @@ MAX_WAIT = 5
 
 logger = logging.getLogger(__name__)
 
-class Cache(object):
+class FileCache(object):
     '''Cache object with file backing
 
     >>> cache = Cache('/tmp/')
@@ -49,6 +47,17 @@ class Cache(object):
 
     def __contains__(self, key):
         return key in self._cache
+
+
+class DummyCache(object):
+    get = __setitem__ = lambda *a, **kw: None
+    __contains__ = lambda *a, **kw: False
+
+
+if settings.DEBUG:
+    cache = DummyCache
+else:
+    cache = FileCache
 
 
 class Minify(object):
@@ -83,14 +92,6 @@ class Minify(object):
         with portalocker.Lock(filename + '.gz', timeout=MAX_WAIT):
             gzfh = gzip.open(filename + '.gz', 'wb')
             gzfh.writelines(fh)
-        fh.close()
-    
-    def _upload_to_cdn(self, filename):
-        relative_filename = filename.replace(settings.MEDIA_ROOT, '')
-        media_storage = storage.CDNStorage()
-        fh = open(filename)
-        media_storage.save(relative_filename, ContentFile(fh.read()),
-            overwrite=True, cdn=True)
         fh.close()
     
     def get_combined_filename(self):
