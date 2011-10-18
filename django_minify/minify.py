@@ -20,12 +20,20 @@ MAX_WAIT = 5
 logger = logging.getLogger(__name__)
 
 class Cache(object):
+    '''Cache object with file backing
+
+    >>> cache = Cache('/tmp/')
+    >>> cache['foo'] = 'bar'
+    >>> 'foo' in cache
+    True
+    '''
     def __init__(self, cache_dir):
         self.cache_file = os.path.join(cache_dir, 'index.pickle')
         self.read()
     
     def read(self):
-        if os.path.isfile(self.cache_file) and settings.FROM_CACHE:
+        if(os.path.isfile(self.cache_file) and settings.FROM_CACHE
+                and not settings.DEBUG):
             self._cache = pickle.load(open(self.cache_file))
         else:
             self._cache = {}
@@ -38,7 +46,6 @@ class Cache(object):
     
     def __setitem__(self, key, value):
         self._cache[key] = value
-        self.write()
 
     def __contains__(self, key):
         return key in self._cache
@@ -88,13 +95,13 @@ class Minify(object):
     
     def get_combined_filename(self):
         cached_file = self.cache.get(tuple(self.files))
-        if settings.FROM_CACHE:
-            assert cached_file, ('Unable to generate cache because '
-                '`FROM_CACHE` is enabled')
-            return cached_file
-        
         if cached_file and not settings.DEBUG:
             return cached_file
+
+        if settings.FROM_CACHE and not settings.DEBUG:
+            import logging
+            logging.error('Unable to generate cache because '
+                '`MINIFY_FROM_CACHE` is enabled')
         
         timestamp = 0
         digest = abs(hash(','.join(self.files)))
@@ -214,6 +221,8 @@ def minify(path, files, extension, minimize=True, compress=True, prefix='',
     else:
         return minifier.get_combined_filename()
 
-
+if __name__ == '__main__':
+    import doctest
+    doctest.runtest()
 
 

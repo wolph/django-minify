@@ -8,7 +8,7 @@ else:
 
 setup(
     name = 'django-minify',
-    version = '1.0',
+    version = '1.1',
     author = 'Rick van Hattem',
     author_email = 'Rick.van.Hattem@Fawo.nl',
     description = '''django-minify is a django app that combines and minifies
@@ -22,7 +22,7 @@ setup(
     ],
     long_description=long_description,
     test_suite='nose.collector',
-#    setup_requires=['nose'],
+    setup_requires=['nose'],
     package_data={'': ['yuicompressor-2.4.6.jar']},
     classifiers=[
         'License :: OSI Approved :: BSD License',
