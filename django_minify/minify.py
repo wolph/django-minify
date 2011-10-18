@@ -50,8 +50,18 @@ class FileCache(object):
 
 
 class DummyCache(object):
-    get = __setitem__ = lambda *a, **kw: None
-    __contains__ = lambda *a, **kw: False
+    # Does nothing at all
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def get(self, key, default=None):
+        pass
+
+    def __setitem__(self, key, value):
+        pass
+
+    def __contains__(self, key):
+        return False
 
 
 if settings.DEBUG:
