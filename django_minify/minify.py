@@ -95,13 +95,17 @@ class Minify(object):
     
     def get_combined_filename(self):
         cached_file = self.cache.get(tuple(self.files))
-        if cached_file and not settings.DEBUG:
-            return cached_file
 
-        if settings.FROM_CACHE and not settings.DEBUG:
-            import logging
-            logging.error('Unable to generate cache because '
-                '`MINIFY_FROM_CACHE` is enabled')
+        if settings.DEBUG:
+            # Always continue when DEBUG is enabled
+            pass
+        elif settings.FROM_CACHE:
+            if cached_file:
+                return cached_file
+            else:
+                import logging
+                logging.error('Unable to generate cache because '
+                    '`MINIFY_FROM_CACHE` is enabled')
         
         timestamp = 0
         digest = abs(hash(','.join(self.files)))
