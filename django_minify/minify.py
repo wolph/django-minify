@@ -60,6 +60,9 @@ class DummyCache(object):
     def __setitem__(self, key, value):
         pass
 
+    def write(self):
+        pass
+
     def __contains__(self, key):
         return False
 
