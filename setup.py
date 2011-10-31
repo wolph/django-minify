@@ -8,7 +8,7 @@ else:
 
 setup(
     name = 'django-minify',
-    version = '1.3',
+    version = '1.3.1',
     author = 'Rick van Hattem',
     author_email = 'Rick.van.Hattem@Fawo.nl',
     description = '''django-minify is a django app that combines and minifies
