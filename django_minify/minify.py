@@ -89,16 +89,25 @@ class Minify(object):
             self.files = []
     
     def _minimize_file(self, input_filename, output_filename):
-        cmd = self.COMPRESSION_COMMAND % dict(
-            output_filename=output_filename,
-            input_filename=input_filename,
-        )
-        logger.info('Compressing with %r', cmd)
-        p = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-        _, err = p.communicate()
-        if p.returncode or err:
-            raise RuntimeError, 'Unable to compress %r: %s' % (self.files,
-                err)
+        if self.COMPRESSION_COMMAND:
+            cmd = self.COMPRESSION_COMMAND % dict(
+                output_filename=output_filename,
+                input_filename=input_filename,
+            )
+            logger.info('Compressing with %r', cmd)
+            p = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
+            _, err = p.communicate()
+            if p.returncode or err:
+                raise RuntimeError, 'Unable to compress %r: %s' % (self.files,
+                    err)
+        else:
+            logger.error('Skipping compression, COMPRESSION_COMMAND not '
+                'defined')
+            fout = open(output_filename, 'w')
+            fin = open(input_filename)
+            fout.write(fin.read())
+            fout.close()
+            fin.close()
     
     def _gzip_file(self, filename):
         fh = open(filename)
