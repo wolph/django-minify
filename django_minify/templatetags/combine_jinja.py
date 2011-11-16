@@ -75,6 +75,11 @@ def flatten_nodes(nodes_):
     return [y for x in output for y in [x.strip()] if y]
 
 class IncludeExtension(MinifyExtension):
+    '''
+    Responsible for parsing the template syntax.
+    Based on settings.DEBUG either calls the specified minifier or simply outputs the files
+    Returns html including the script tags
+    '''
     def parse(self, parser):
         lineno = parser.stream.next().lineno
         includes = flatten_nodes(parser.parse_statements(
@@ -85,18 +90,33 @@ class IncludeExtension(MinifyExtension):
         base_path = '/'.join([settings.MEDIA_URL, self.extension, 'original'])
         
         output_nodes = []
-        if settings.DEBUG:
+        if settings.DEBUG and False:
             for include in includes:
-                minifier = self.Minifier([include])
                 html = self.template % '/'.join([base_path, include])
-                output_nodes.append(nodes.TemplateData(html))
+                output_nodes.append(nodes.Const(html))
 
         else:
             minifier = self.Minifier(includes)
             html = self.template % minifier.get_minified_url()
-            output_nodes.append(nodes.TemplateData(html))
+            output_nodes.append(nodes.Const(html))
+            
+        #args seems to be the parsed bit of template, not stadnard python args :(
+        callable = self.call_method('_render', [nodes.List(output_nodes)])
+        block = nodes.CallBlock(callable, [], [], [])
+        block = block.set_lineno(lineno)
         
-        return nodes.Output(output_nodes).set_lineno(lineno)
+        return block
+    
+    @contextfunction
+    def _render(self, context, output_nodes, *args, **kwargs):
+        '''
+        Replace the language code in order to access the different files, either
+        combined or single files (on debug)
+        '''
+        html = ''.join(output_nodes)
+        html = html.replace('<lang>', context['LANGUAGE_CODE'])
+        markup = Markup(html)
+        return markup
 
 
 class CssExtension(MinifyExtension):
