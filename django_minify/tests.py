@@ -4,6 +4,7 @@ import logging
 import json
 from framework.utils.test import TestCase
 from django_minify.minify import MinifyJs
+import os
 
 
 logger = logging.getLogger(__name__)
@@ -12,8 +13,9 @@ from functools import partial
     
 class TestLangSupport(TestCase):
     def get_files(self):
+
         simple = [u'jquery.js']
-        lang = [u'fashiolista.js', u'translated/i18n_<lang>.js']
+        lang = [u'fashiolista.js', os.path.join('translated','i18n_<lang>.js')]
         return simple, lang
     
     def test_file_combination(self):

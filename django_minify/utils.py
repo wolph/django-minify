@@ -13,7 +13,7 @@ def has_lang(iterable):
     return has_lang
 
 def get_language_codes():
-    language_codes = [x for x in settings.DEV_LANGUAGES if x != 'ka']
+    language_codes = [k for k, v in settings.DEV_LANGUAGES if k != 'ka']
     return language_codes
 
 def get_locales(has_lang):
@@ -38,8 +38,9 @@ def expand_on_locale(name_or_path):
     expanded = []
     if LANGUAGE_ID in name_or_path:
         language_codes = get_language_codes()
-        for l in language_codes:
-            expanded.append(name_or_path.replace(LANGUAGE_ID, l))
+        for lang in language_codes:
+            localized_path = name_or_path.replace(LANGUAGE_ID, lang)
+            expanded.append(localized_path)
     else:
         expanded.append(name_or_path)
         

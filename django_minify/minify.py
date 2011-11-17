@@ -138,11 +138,15 @@ class Minify(object):
         files = []
         # the filename will be max(timestamp
         for file_ in self.files:
-            fullpath = os.path.join(settings.MEDIA_ROOT, self.extension,
+            simple_fullpath = os.path.join(settings.MEDIA_ROOT, self.extension,
                 'original', file_)
-            stat = os.stat(fullpath)
-            timestamp = max(timestamp, stat.st_mtime, stat.st_ctime)
-            files.append(fullpath)
+            fullpaths = expand_on_locale(simple_fullpath)
+            #expand to language specific versions, because if they changed we need to redirect
+            for fullpath in fullpaths:
+                stat = os.stat(fullpath)
+                timestamp = max(timestamp, stat.st_mtime, stat.st_ctime)
+            #simple fullpath is the version with <lang> still in there
+            files.append(simple_fullpath)
         
         cached_file = os.path.join(self.cache_dir, '%d_debug_%d.%s' % 
             (digest, timestamp, self.extension))
