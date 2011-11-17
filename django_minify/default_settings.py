@@ -16,6 +16,7 @@ JAVA_PATHS = [
     '/bin/java',
     '/usr/bin/java',
     '/usr/local/bin/java',
+    'c:/Windows/System32/java.exe',
 ]
 
 YUI_PATH = _path.join(_path.dirname(__file__), 'yuicompressor-2.4.6.jar')

@@ -1,4 +1,5 @@
 from django.conf import settings
+import os
 
 
 LANGUAGE_ID = '<lang>'
@@ -6,7 +7,6 @@ LANGUAGE_ID = '<lang>'
 def has_lang(iterable):
     has_lang = False
     for item in iterable:
-        print item
         if LANGUAGE_ID in unicode(item):
             has_lang = True
             break
@@ -16,7 +16,7 @@ def get_language_codes():
     language_codes = [k for k, v in settings.DEV_LANGUAGES if k != 'ka']
     return language_codes
 
-def get_locales(has_lang):
+def get_languages_list(has_lang):
     '''
     Returns locales or a nice list with None if there are no locales
     '''
@@ -26,7 +26,7 @@ def get_locales(has_lang):
         locales = get_language_codes()
     return locales
         
-def expand_on_locale(name_or_path):
+def expand_on_lang(name_or_path):
     '''
     Expands something like
     my_file_<trans>.js
@@ -46,7 +46,7 @@ def expand_on_locale(name_or_path):
         
     return expanded
 
-def replace_locale(name_or_path, locale):
+def replace_lang(name_or_path, locale):
     '''
     Replaces something like
     my_file<trans>.js
@@ -58,7 +58,10 @@ def replace_locale(name_or_path, locale):
     return name_or_path.replace(LANGUAGE_ID, unicode(locale))
     
 def append_lang(name_or_path):
-    return name_or_path + LANGUAGE_ID
+    assert LANGUAGE_ID not in name_or_path
+    path, ext = os.path.splitext(name_or_path)
+    path_with_lang = path + LANGUAGE_ID + ext
+    return path_with_lang
     
     
     

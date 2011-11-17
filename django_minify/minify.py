@@ -6,8 +6,8 @@ from framework.middleware.spaceless import SpacelessMiddleware
 import gzip
 import portalocker
 import logging
-from django_minify.utils import has_lang, get_locales, expand_on_locale,\
-    replace_locale, append_lang
+from django_minify.utils import has_lang, get_languages_list, expand_on_lang,\
+    replace_lang, append_lang
 
 try:
     import cPickle as pickle
@@ -91,6 +91,8 @@ class Minify(object):
             self.files = []
     
     def _minimize_file(self, input_filename, output_filename):
+        '''
+        '''
         if self.COMPRESSION_COMMAND:
             cmd = self.COMPRESSION_COMMAND % dict(
                 output_filename=output_filename,
@@ -110,6 +112,7 @@ class Minify(object):
             fout.write(fin.read())
             fout.close()
             fin.close()
+        return output_filename
     
     def _gzip_file(self, filename):
         fh = open(filename)
@@ -119,14 +122,14 @@ class Minify(object):
         fh.close()
     
     def get_combined_filename(self, force_generation=False):
-        cached_file = self.cache.get(tuple(self.files))
+        cached_file_path = self.cache.get(tuple(self.files))
 
         if settings.DEBUG:
             # Always continue when DEBUG is enabled
             pass
         elif settings.FROM_CACHE:
-            if cached_file:
-                return cached_file
+            if cached_file_path:
+                return cached_file_path
             else:
                 import logging
                 logging.error('Unable to generate cache because '
@@ -136,11 +139,12 @@ class Minify(object):
         digest = abs(hash(','.join(self.files)))
         
         files = []
+        language_specific = has_lang(self.files)
         # the filename will be max(timestamp
         for file_ in self.files:
             simple_fullpath = os.path.join(settings.MEDIA_ROOT, self.extension,
                 'original', file_)
-            fullpaths = expand_on_locale(simple_fullpath)
+            fullpaths = expand_on_lang(simple_fullpath)
             #expand to language specific versions, because if they changed we need to redirect
             for fullpath in fullpaths:
                 stat = os.stat(fullpath)
@@ -148,19 +152,20 @@ class Minify(object):
             #simple fullpath is the version with <lang> still in there
             files.append(simple_fullpath)
         
-        cached_file = os.path.join(self.cache_dir, '%d_debug_%d.%s' % 
+        cached_file_path = os.path.join(self.cache_dir, '%d_debug_%d.%s' % 
             (digest, timestamp, self.extension))
         
-        if not os.path.isfile(cached_file) or force_generation:
+        
+        if not os.path.isfile(cached_file_path) or force_generation:
             if not os.path.isdir(self.cache_dir):
                 os.makedirs(self.cache_dir)
-                
+            cached_file_path = self._generate_combined_file(cached_file_path, files)
+        elif language_specific:
+            cached_file_path = append_lang(cached_file_path)
             
-
-            cached_file = self._generate_combined_file(cached_file, files)
+        self.cache[tuple(self.files)] = cached_file_path
         
-        self.cache[tuple(self.files)] = cached_file
-        return cached_file
+        return cached_file_path
 
     def _generate_combined_file(self, filename, files):
         '''
@@ -171,12 +176,12 @@ class Minify(object):
         filename = the file we are writing to
         files = the list of files we are compiling
         
-        Generates a stripped version of each file. Expanding localized files where needed
+        Generates a stripped version of each file. Expanding language_specific files where needed
         Subsequently gets a combined file per locale
         Finally it writes a file per locale with this output 
         '''
         name = os.path.splitext(os.path.split(filename)[1])[0]
-        localized = has_lang(files)
+        language_specific = has_lang(files)
         
         #combined output per locale
         combined_per_locale = dict()
@@ -185,7 +190,7 @@ class Minify(object):
         
         #loop through all files and combine them, expand if there is a <lang>
         for file_path in files:
-            localized_paths = expand_on_locale(file_path)
+            localized_paths = expand_on_lang(file_path)
             for localized_path in localized_paths:
                 read_fh = open(localized_path)
                 # Add the spaceless version to the output
@@ -194,14 +199,15 @@ class Minify(object):
                 read_fh.close()
                 
         #generate the combined file for each locale
-        locales = get_locales(localized)
+        locales = get_languages_list(language_specific)
         for locale in locales:
-            #get the localized versions of the files and combine them
+            #get the language_specific versions of the files and combine them
             combined_output = ''
             for file_path in files:
-                file_path = replace_locale(file_path, locale)
+                file_path = replace_lang(file_path, locale)
                 content = stripped_files_dict[file_path]
                 combined_output += content
+                combined_output += '\n'
             
             #postfix some debug info to ensure we can check for the file's validity
             if self.extension == 'js':
@@ -220,40 +226,69 @@ class Minify(object):
                 
             combined_per_locale[locale] = combined_output
             
-        #write the combined version per locale to files
+        #write the combined version per locale to temporary files and then move them
+        #to their locale specific file
         for locale in locales:
             combined_output = combined_per_locale[locale]
             postfix = '%s.tmp' % locale
             temp_file_path = filename + postfix
             
-            with portalocker.Lock(temp_file_path, timeout=MAX_WAIT) as fh:
+            path, ext = os.path.splitext(filename)
+            final_file_path = filename.replace(ext, '%s%s' % (locale, ext)) if locale else filename
             
+            #be atomic!
+            with portalocker.Lock(temp_file_path, timeout=MAX_WAIT) as fh:
                 fh.write(combined_output)
     
-            os.rename(filename + postfix, filename)
+            
+            if os.path.isfile(final_file_path):
+                os.remove(final_file_path)
+            os.rename(filename + postfix, final_file_path)
         
-        if localized:
+        if language_specific:
             filename = append_lang(filename)
             
         return filename
     
-    def get_minified_filename(self):
+    def get_minified_filename(self, force_generation=False):
+        '''
+        Returns the minified filename, for language specific files it will return
+        filename_<lang>.js
+        '''
         input_filename = self.get_combined_filename()
-        filename = input_filename.rpartition('_debug_')
-        output_filename = ''.join([filename[0], '_mini_', filename[2]])
+        output_filename = input_filename.replace('_debug_', '_mini_')
         if output_filename in self.cache:
+            #if the output is cached, immediatly return it without checking the filesystem
             return output_filename
-
         else:
-            if not os.path.isfile(output_filename):
-                tmp_filename = output_filename + '.tmp'
-                with portalocker.Lock(tmp_filename, timeout=MAX_WAIT):
-                    self._minimize_file(input_filename, tmp_filename)
-
-                os.rename(tmp_filename, output_filename)
+            #see if all the files we need are actually there
+            compiled_files_available = True
+            output_filenames = expand_on_lang(output_filename)
+            for lang_specific_filename in output_filenames:
+                if not os.path.isfile(lang_specific_filename):
+                    compiled_files_available = False
+            
+            if not compiled_files_available or force_generation:
+                #loop over the various locales
+                input_filenames = expand_on_lang(input_filename)
+                for input_filename in input_filenames:
+                    lang_specific_output_path = input_filename.replace('_debug_', '_mini_')
+                    tmp_filename = lang_specific_output_path + '.tmp'
+                    #compile towards a temporary file, which only this process and its children can touch
+                    with portalocker.Lock(tmp_filename, timeout=MAX_WAIT):
+                        self._minimize_file(input_filename, tmp_filename)
+                        
+                    #raise an error if the file exist, or remove it if rebuilding
+                    if os.path.isfile(lang_specific_output_path):
+                        if force_generation:
+                            os.remove(lang_specific_output_path)
+                        else:
+                            raise IOError('%r already exists' % lang_specific_output_path)
+                    os.rename(tmp_filename, lang_specific_output_path)
+                    assert os.path.isfile(lang_specific_output_path)
 
             self.cache[output_filename] = True
-
+            
         return output_filename
     
     @classmethod
