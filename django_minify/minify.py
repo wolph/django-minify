@@ -275,9 +275,12 @@ class Minify(object):
                     lang_specific_output_path = input_filename.replace('_debug_', '_mini_')
                     tmp_filename = lang_specific_output_path + '.tmp'
                     #compile towards a temporary file, which only this process and its children can touch
-                    with portalocker.Lock(tmp_filename, timeout=MAX_WAIT):
+                    if os.name == 'nt':
+                        #child processes cant access things we lock under windows like environments
                         self._minimize_file(input_filename, tmp_filename)
-                        
+                    else:
+                        with portalocker.Lock(tmp_filename, timeout=MAX_WAIT):
+                            self._minimize_file(input_filename, tmp_filename)
                     #raise an error if the file exist, or remove it if rebuilding
                     if os.path.isfile(lang_specific_output_path):
                         if force_generation:
