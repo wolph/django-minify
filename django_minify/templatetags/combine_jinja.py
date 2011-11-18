@@ -90,7 +90,7 @@ class IncludeExtension(MinifyExtension):
         base_path = '/'.join([settings.MEDIA_URL, self.extension, 'original'])
         
         output_nodes = []
-        if settings.DEBUG and not settings.TEST_COMPILE:
+        if settings.DEBUG and not getattr(settings, 'TEST_COMPILE', False):
             for include in includes:
                 html = self.template % '/'.join([base_path, include])
                 output_nodes.append(nodes.Const(html))
