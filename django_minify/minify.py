@@ -285,10 +285,9 @@ class Minify(object):
                             self._minimize_file(input_filename, tmp_filename)
                     #raise an error if the file exist, or remove it if rebuilding
                     if os.path.isfile(lang_specific_output_path):
-                        if force_generation:
-                            os.remove(lang_specific_output_path)
-                        else:
-                            raise IOError('%r already exists' % lang_specific_output_path)
+                        os.remove(lang_specific_output_path)
+                        if not force_generation:
+                            logger.warn('%r already exists', lang_specific_output_path)
                     os.rename(tmp_filename, lang_specific_output_path)
                     assert os.path.isfile(lang_specific_output_path)
 

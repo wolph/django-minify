@@ -5,7 +5,7 @@ import json
 from framework.utils.test import TestCase
 from django_minify.minify import MinifyJs
 import os
-from django_minify.utils import LANGUAGE_ID
+from django_minify.utils import LANGUAGE_ID, replace_lang
 from django_minify.utils import expand_on_lang
 from django_minify.exceptions import FromCacheException
 
@@ -25,6 +25,45 @@ class TestLangSupport(TestCase):
         
         self.assertValidLangPath(minified_filename)
 
+    def test_lang_file_minify_with_missing_file(self):
+        '''
+        Generates, removes one of the files, and subsequently tries again.
+        Used for testing failures half way through the script
+        '''
+        simple, lang = self.get_files()
+        lang_minify = MinifyJs(lang)
+        combined_filename = lang_minify.get_combined_filename(force_generation=True)
+        self.assertLang(combined_filename)
+        minified_filename = lang_minify.get_minified_filename(force_generation=True)
+        pt_filename = replace_lang(minified_filename, 'pt-br')
+        self.assertLang(minified_filename)
+        self.assertValidLangPath(minified_filename)
+        #remove one of the files and see if things will still work :)
+        assert os.path.isfile(pt_filename)
+        os.remove(pt_filename)
+        
+        #try with from cache disabled
+        minified_filename = lang_minify.get_minified_filename(force_generation=True)
+        pt_filename = replace_lang(minified_filename, 'pt-br')
+        #this shouldnt have been regenerated
+        #TODO: Maybe it would be desired behaviour to rebuild
+        assert not os.path.isfile(pt_filename)
+        
+        #try with from cache enabled
+        from django_minify.conf import settings
+        OLD_FROM_CACHE, OLD_DEBUG = settings.FROM_CACHE, settings.DEBUG
+        settings.FROM_CACHE = True
+        settings.DEBUG = False
+        try:
+            minified_filename = lang_minify.get_minified_filename(force_generation=True)
+            pt_filename = replace_lang(minified_filename, 'pt-br')
+            #this shouldnt have been regenerated
+            assert not os.path.isfile(pt_filename)
+        finally:
+            settings.FROM_CACHE = OLD_FROM_CACHE
+            settings.DEBUG = OLD_DEBUG
+        
+
     def test_file_minify(self):
         simple, lang = self.get_files()
         lang_minify = MinifyJs(simple)
@@ -36,16 +75,17 @@ class TestLangSupport(TestCase):
         OLD_FROM_CACHE, OLD_DEBUG = settings.FROM_CACHE, settings.DEBUG
         settings.FROM_CACHE = True
         settings.DEBUG = False
-        
+        simple, lang = self.get_files()
+        test_files = [simple, lang]
         try:
-            try:
-                simple, lang = self.get_files()
-                lang_minify = MinifyJs(simple)
-                combined_filename = lang_minify.get_combined_filename(force_generation=True, raise_=True)
-                minified_filename = lang_minify.get_minified_filename(force_generation=True)
-                raise ValueError, "We were expecting a from cache exceptions"
-            except FromCacheException, e:
-                pass
+            for files in test_files:
+                try:
+                    lang_minify = MinifyJs(files)
+                    combined_filename = lang_minify.get_combined_filename(force_generation=True, raise_=True)
+                    minified_filename = lang_minify.get_minified_filename(force_generation=True)
+                    raise ValueError, "We were expecting a from cache exceptions"
+                except FromCacheException, e:
+                    pass
         finally:
             settings.FROM_CACHE = OLD_FROM_CACHE
             settings.DEBUG = OLD_DEBUG
