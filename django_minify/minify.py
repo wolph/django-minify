@@ -124,7 +124,6 @@ class Minify(object):
     
     def get_combined_filename(self, force_generation=False, raise_=False):
         cached_file_path = self.cache.get(tuple(self.files))
-        print settings.DEBUG, settings.FROM_CACHE
         if settings.DEBUG:
             # Always continue when DEBUG is enabled
             pass
