@@ -33,17 +33,22 @@ class TestLangSupport(TestCase):
         
     def test_failing_minify(self):
         from django_minify.conf import settings
+        OLD_FROM_CACHE, OLD_DEBUG = settings.FROM_CACHE, settings.DEBUG
         settings.FROM_CACHE = True
         settings.DEBUG = False
         
         try:
-            simple, lang = self.get_files()
-            lang_minify = MinifyJs(simple)
-            combined_filename = lang_minify.get_combined_filename(force_generation=True, raise_=True)
-            minified_filename = lang_minify.get_minified_filename(force_generation=True)
-            raise ValueError, "We were expecting a from cache exceptions"
-        except FromCacheException, e:
-            pass
+            try:
+                simple, lang = self.get_files()
+                lang_minify = MinifyJs(simple)
+                combined_filename = lang_minify.get_combined_filename(force_generation=True, raise_=True)
+                minified_filename = lang_minify.get_minified_filename(force_generation=True)
+                raise ValueError, "We were expecting a from cache exceptions"
+            except FromCacheException, e:
+                pass
+        finally:
+            settings.FROM_CACHE = OLD_FROM_CACHE
+            settings.DEBUG = OLD_DEBUG
         
         
         

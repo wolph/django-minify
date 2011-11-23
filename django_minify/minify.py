@@ -131,11 +131,10 @@ class Minify(object):
             if cached_file_path:
                 return cached_file_path
             else:
-                import logging
                 logging.error('Unable to generate cache because '
-                    '`MINIFY_FROM_CACHE` is enabled')
+                    '`MINIFY_FROM_CACHE` is enabled was trying to compile %s', self.files)
                 if raise_:
-                    raise FromCacheException('When FROM CACHE is enabled you cannot access the file system')
+                    raise FromCacheException('When FROM CACHE is enabled you cannot access the file system, was trying to compile %s' % self.files)
         
         timestamp = 0
         digest = abs(hash(','.join(self.files)))
