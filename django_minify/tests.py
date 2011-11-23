@@ -7,10 +7,12 @@ from django_minify.minify import MinifyJs
 import os
 from django_minify.utils import LANGUAGE_ID
 from django_minify.utils import expand_on_lang
+from django_minify.exceptions import FromCacheException
 
 logger = logging.getLogger(__name__)
 
 from functools import partial
+
     
 class TestLangSupport(TestCase):
     def test_lang_file_minify(self):
@@ -28,6 +30,21 @@ class TestLangSupport(TestCase):
         lang_minify = MinifyJs(simple)
         combined_filename = lang_minify.get_combined_filename(force_generation=True)
         minified_filename = lang_minify.get_minified_filename(force_generation=True)
+        
+    def test_failing_minify(self):
+        from django_minify.conf import settings
+        settings.FROM_CACHE = True
+        settings.DEBUG = False
+        
+        try:
+            simple, lang = self.get_files()
+            lang_minify = MinifyJs(simple)
+            combined_filename = lang_minify.get_combined_filename(force_generation=True, raise_=True)
+            minified_filename = lang_minify.get_minified_filename(force_generation=True)
+            raise ValueError, "We were expecting a from cache exceptions"
+        except FromCacheException, e:
+            pass
+        
         
         
     def get_files(self):

@@ -8,6 +8,7 @@ import portalocker
 import logging
 from django_minify.utils import has_lang, get_languages_list, expand_on_lang,\
     replace_lang, append_lang
+from django_minify.exceptions import FromCacheException
 
 try:
     import cPickle as pickle
@@ -121,9 +122,9 @@ class Minify(object):
             gzfh.writelines(fh)
         fh.close()
     
-    def get_combined_filename(self, force_generation=False):
+    def get_combined_filename(self, force_generation=False, raise_=False):
         cached_file_path = self.cache.get(tuple(self.files))
-
+        print settings.DEBUG, settings.FROM_CACHE
         if settings.DEBUG:
             # Always continue when DEBUG is enabled
             pass
@@ -134,6 +135,8 @@ class Minify(object):
                 import logging
                 logging.error('Unable to generate cache because '
                     '`MINIFY_FROM_CACHE` is enabled')
+                if raise_:
+                    raise FromCacheException('When FROM CACHE is enabled you cannot access the file system')
         
         timestamp = 0
         digest = abs(hash(','.join(self.files)))
@@ -261,6 +264,7 @@ class Minify(object):
             #if the output is cached, immediatly return it without checking the filesystem
             return output_filename
         else:
+            assert not settings.FROM_CACHE, 'This shouldnt be happening'
             #see if all the files we need are actually there
             compiled_files_available = True
             output_filenames = expand_on_lang(output_filename)
