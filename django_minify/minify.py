@@ -54,6 +54,12 @@ class FileCache(object):
 
     def __contains__(self, key):
         return key in self._cache
+    
+    def __unicode__(self):
+        return unicode(self._cache)
+    
+    def __repr__(self):
+        return repr(self._cache)
 
 
 class DummyCache(object):
