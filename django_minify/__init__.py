@@ -6,7 +6,7 @@ __credits__ = ['Rick van Hattem']
 
 
 __license__ = 'BSD'
-__version__ = '1.4.12'
+__version__ = '1.4.13'
 __maintainer__ = 'Rick van Hattem'
 __email__ = 'rick@fashiolista.com'
 __status__ = 'Production'
