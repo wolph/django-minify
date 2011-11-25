@@ -56,10 +56,10 @@ class FileCache(object):
         return key in self._cache
     
     def __unicode__(self):
-        return unicode(self._cache)
+        return unicode(self._cache.keys())
     
     def __repr__(self):
-        return repr(self._cache)
+        return repr(self._cache.keys())
 
 
 class DummyCache(object):
@@ -274,7 +274,7 @@ class Minify(object):
             #if the output is cached, immediatly return it without checking the filesystem
             return output_filename
         else:
-            if not settings.DEBUG:
+            if not settings.DEBUG and not force_generation:
                 #while running on debug this isn't an error because a dummy cache backend is used
                 error_message = 'There is no file cache available, but we arent allowed to build the files. Searching for %s in %s' % (output_filename, self.cache)
                 assert not settings.FROM_CACHE, error_message
