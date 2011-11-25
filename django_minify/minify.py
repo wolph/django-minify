@@ -268,7 +268,8 @@ class Minify(object):
             #if the output is cached, immediatly return it without checking the filesystem
             return output_filename
         else:
-            assert not settings.FROM_CACHE, 'This shouldnt be happening'
+            error_message = 'There is no file cache available, but we arent allowed to build the files. Searching for %s in %s' % (output_filename, self.cache)
+            assert not settings.FROM_CACHE, error_message
             #see if all the files we need are actually there
             compiled_files_available = True
             output_filenames = expand_on_lang(output_filename)

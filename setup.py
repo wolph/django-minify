@@ -1,5 +1,6 @@
 import os
 from setuptools import setup
+from django_minify import __version__
 
 if os.path.isfile('README.rst'):
     long_description = open('README.rst').read()
@@ -8,7 +9,7 @@ else:
 
 setup(
     name = 'django-minify',
-    version = '1.4.9',
+    version = __version__,
     author = 'Rick van Hattem',
     author_email = 'Rick.van.Hattem@Fawo.nl',
     description = '''django-minify is a django app that combines and minifies
