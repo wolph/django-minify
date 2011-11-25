@@ -2,7 +2,10 @@ from __future__ import with_statement
 import os
 import subprocess
 from django_minify.conf import settings
-from framework.middleware.spaceless import SpacelessMiddleware
+try:
+    from framework.middleware.spaceless import SpacelessMiddleware
+except ImportError:
+    SpacelessMiddleware = None
 import gzip
 import portalocker
 import logging
@@ -195,7 +198,10 @@ class Minify(object):
             for localized_path in localized_paths:
                 read_fh = open(localized_path)
                 # Add the spaceless version to the output
-                data = SpacelessMiddleware.strip_content_safe(read_fh.read())
+                if SpacelessMiddleware:
+                    data = SpacelessMiddleware.strip_content_safe(read_fh.read())
+                else:
+                    data = read_fh.read()
                 stripped_files_dict[localized_path] = data
                 read_fh.close()
                 

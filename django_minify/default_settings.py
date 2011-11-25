@@ -51,3 +51,12 @@ CSS_INCLUDE = '''
 '''
 
 FROM_CACHE = True
+
+DEV_LANGUAGES = (
+    ('en', 'English'),
+    ('pt-br', 'Portugese (Brazil)'),
+)
+DEBUG = False
+MEDIA_ROOT = 'media/'
+LANGUAGE_ID = '<lang>'
+

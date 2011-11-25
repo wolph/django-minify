@@ -8,21 +8,26 @@ else:
 
 setup(
     name = 'django-minify',
-    version = '1.4.8',
+    version = '1.4.9',
     author = 'Rick van Hattem',
     author_email = 'Rick.van.Hattem@Fawo.nl',
     description = '''django-minify is a django app that combines and minifies
         css and javascript files.''',
     url='https://github.com/WoLpH/django-minify',
     license = 'BSD',
-    install_requires=['python-utils>=1.0'],
+    install_requires=[
+        'python-utils>=1.0',
+        'portalocker>=0.3',
+    ],
     packages=[
         'django_minify',
         'django_minify.templatetags',
     ],
     long_description=long_description,
     test_suite='nose.collector',
-    setup_requires=['nose'],
+    setup_requires=[
+        'nose>=1.0',
+    ],
     package_data={'': ['yuicompressor-2.4.6.jar']},
     classifiers=[
         'License :: OSI Approved :: BSD License',

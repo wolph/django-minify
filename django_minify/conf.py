@@ -1,4 +1,5 @@
 from django_minify import default_settings
+import pprint
 import os
 try:
     from django.conf import settings as django_settings
@@ -104,7 +105,10 @@ class Settings(object):
         Setting('JS_INCLUDE'),
         Setting('CSS_INLINE'),
         Setting('CSS_INCLUDE'),
+        Setting('LANGUAGE_ID'),
         Setting('MEDIA_ROOT', prefix=''),
+        Setting('DEV_LANGUAGES', prefix=''),
+        Setting('DEBUG', prefix=''),
     )
     
     def __init__(self):
@@ -133,8 +137,7 @@ class Settings(object):
 
 settings = Settings()
 
-
-
 import sys
 if not settings.FROM_CACHE:
     assert 'compile_templates' in sys.argv 
+

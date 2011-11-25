@@ -1,13 +1,11 @@
-from django.conf import settings
 import os
+from django_minify.conf import settings
 
-
-LANGUAGE_ID = '<lang>'
 
 def has_lang(iterable):
     has_lang = False
     for item in iterable:
-        if LANGUAGE_ID in unicode(item):
+        if settings.LANGUAGE_ID in unicode(item):
             has_lang = True
             break
     return has_lang
@@ -36,10 +34,10 @@ def expand_on_lang(name_or_path):
     ....
     '''
     expanded = []
-    if LANGUAGE_ID in name_or_path:
+    if settings.LANGUAGE_ID in name_or_path:
         language_codes = get_language_codes()
         for lang in language_codes:
-            localized_path = name_or_path.replace(LANGUAGE_ID, lang)
+            localized_path = name_or_path.replace(settings.LANGUAGE_ID, lang)
             expanded.append(localized_path)
     else:
         expanded.append(name_or_path)
@@ -55,12 +53,12 @@ def replace_lang(name_or_path, locale):
     or if no locale is given
     my_file.js
     '''
-    return name_or_path.replace(LANGUAGE_ID, unicode(locale))
+    return name_or_path.replace(settings.LANGUAGE_ID, unicode(locale))
     
 def append_lang(name_or_path):
-    assert LANGUAGE_ID not in name_or_path
+    assert settings.LANGUAGE_ID not in name_or_path
     path, ext = os.path.splitext(name_or_path)
-    path_with_lang = path + LANGUAGE_ID + ext
+    path_with_lang = path + settings.LANGUAGE_ID + ext
     return path_with_lang
     
     
