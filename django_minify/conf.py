@@ -137,7 +137,4 @@ class Settings(object):
 
 settings = Settings()
 
-import sys
-if not settings.FROM_CACHE:
-    assert 'compile_templates' in sys.argv 
 
