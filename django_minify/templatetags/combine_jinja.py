@@ -107,14 +107,18 @@ class IncludeExtension(MinifyExtension):
         
         return block
     
+    def _join_nodes(self, context, nodes, separator=''):
+        html = separator.join(nodes)
+        html = html.replace('<lang>', context['LANGUAGE_CODE'])
+	return html
+
     @contextfunction
     def _render(self, context, output_nodes, *args, **kwargs):
         '''
         Replace the language code in order to access the different files, either
         combined or single files (on debug)
         '''
-        html = ''.join(output_nodes)
-        html = html.replace('<lang>', context['LANGUAGE_CODE'])
+        html = self._join_nodes(context, output_nodes)
         markup = Markup(html)
         return markup
 
@@ -139,7 +143,24 @@ class JsIncludeExtension(JsExtension, IncludeExtension):
             url = settings.MEDIA_URL + include[0]
         
         return url
+
 register.tag(JsIncludeExtension)
+
+class JsHeadIncludeExtension(JsIncludeExtension):
+    """
+    wraps all nodes with a template 
+    <head>...</head> or head.js(...);
+    """
+    tags = ['js_head_include', 'endjs_head_include']
+    template = settings.JS_HEAD_INCLUDE
+    js_head_template = settings.JS_HEAD_CONTAINER
+
+    @contextfunction
+    def _join_nodes(self, context, nodes):
+        html = super(JsHeadIncludeExtension, self)._join_nodes(context, nodes, separator=',')
+        return self.js_head_template % html
+
+register.tag(JsHeadIncludeExtension)
 
 
 class CssIncludeExtension(CssExtension, IncludeExtension):
