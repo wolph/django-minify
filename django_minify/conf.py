@@ -104,7 +104,7 @@ class Settings(object):
         Setting('JS_INLINE'),
         Setting('JS_INCLUDE'),
         Setting('JS_HEAD_INCLUDE'),
-        Setting('JS_HEAD_READY'),
+        Setting('JS_HEAD_CONTAINER'),
         Setting('CSS_INLINE'),
         Setting('CSS_INCLUDE'),
         Setting('LANGUAGE_ID'),

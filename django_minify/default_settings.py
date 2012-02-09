@@ -41,7 +41,7 @@ JS_INCLUDE = '''
 '''
 
 JS_HEAD_INCLUDE = '''"%s"'''
-JS_HEAD_READY = '''head.js(%s);'''
+JS_HEAD_CONTAINER = '''head.js(%s);'''
 
 CSS_INLINE = '''<style media="all">
 /* <![CDATA[ */

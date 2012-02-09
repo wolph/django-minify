@@ -153,7 +153,7 @@ class JsHeadIncludeExtension(JsIncludeExtension):
     """
     tags = ['js_head_include', 'endjs_head_include']
     template = settings.JS_HEAD_INCLUDE
-    js_head_template = settings.JS_HEAD_READY
+    js_head_template = settings.JS_HEAD_CONTAINER
 
     @contextfunction
     def _join_nodes(self, context, nodes):
