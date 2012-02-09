@@ -40,6 +40,9 @@ JS_INCLUDE = '''
 <script src="%s" type="text/javascript" charset="utf-8"></script>
 '''
 
+JS_HEAD_INCLUDE = '''"%s"'''
+JS_HEAD_READY = '''head.js(%s);'''
+
 CSS_INLINE = '''<style media="all">
 /* <![CDATA[ */
 %s
