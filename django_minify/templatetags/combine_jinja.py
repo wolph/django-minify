@@ -3,7 +3,6 @@ from django_minify import minify
 from django_minify.conf import settings
 from django_minify.templatetags import combine
 from jinja2 import Markup, contextfunction, ext, nodes
-import urlparse
 
 register = Library()
 
@@ -110,7 +109,7 @@ class IncludeExtension(MinifyExtension):
     def _join_nodes(self, context, nodes, separator=''):
         html = separator.join(nodes)
         html = html.replace('<lang>', context['LANGUAGE_CODE'])
-	return html
+        return html
 
     @contextfunction
     def _render(self, context, output_nodes, *args, **kwargs):
@@ -146,18 +145,27 @@ class JsIncludeExtension(JsExtension, IncludeExtension):
 
 register.tag(JsIncludeExtension)
 
-class JsHeadIncludeExtension(JsIncludeExtension):
+class JsHeadExtension(JsIncludeExtension):
+    tags = ['js_head', 'endjs_head']
+    template = settings.JS_HEAD_INCLUDE
+
+    @contextfunction
+    def _join_nodes(self, context, nodes):
+        return super(JsHeadExtension, self)._join_nodes(context, nodes, separator=',')
+
+register.tag(JsHeadExtension)
+
+class JsHeadIncludeExtension(JsHeadExtension):
     """
     wraps all nodes with a template 
     <head>...</head> or head.js(...);
     """
     tags = ['js_head_include', 'endjs_head_include']
-    template = settings.JS_HEAD_INCLUDE
     js_head_template = settings.JS_HEAD_CONTAINER
 
     @contextfunction
     def _join_nodes(self, context, nodes):
-        html = super(JsHeadIncludeExtension, self)._join_nodes(context, nodes, separator=',')
+        html = super(JsHeadIncludeExtension, self)._join_nodes(context, nodes)
         return self.js_head_template % html
 
 register.tag(JsHeadIncludeExtension)
@@ -168,19 +176,18 @@ class CssIncludeExtension(CssExtension, IncludeExtension):
     template = settings.CSS_INCLUDE
 register.tag(CssIncludeExtension)
 
-
-class JsMinifyExtension(JsExtension, MinifyExtension):
-    tags = ['js', 'endjs']
-    template = settings.JS_INLINE
-register.tag(JsMinifyExtension)
-
-
-class CssMinifyExtension(CssExtension, MinifyExtension):
-    tags = ['css', 'endcss']
-    template = settings.CSS_INLINE
-    
-register.tag(CssMinifyExtension)
-
+# TODO: fix if we ever need inline javascript/css minified
+#class JsMinifyExtension(JsExtension, MinifyExtension):
+#    tags = ['js', 'endjs']
+#    template = settings.JS_INLINE
+#register.tag(JsMinifyExtension)
+#
+#
+#class CssMinifyExtension(CssExtension, MinifyExtension):
+#    tags = ['css', 'endcss']
+#    template = settings.CSS_INLINE
+#    
+#register.tag(CssMinifyExtension)
 
 class Combine(ext.Extension):
     # TODO: Deprecated, the `combine tag should be replaced by
@@ -188,6 +195,9 @@ class Combine(ext.Extension):
     tags = set(['combine'])
 
     def parse(self, parser):
+        import warnings
+        warnings.warn('Combine extension is deprecated, replace with '
+            'jsinclude/cssinclude/js_head/js_head_include', DeprecationWarning)
         tag = parser.stream.next()
         lineno = tag.lineno
         body = parser.parse_primary()
@@ -209,3 +219,4 @@ class Combine(ext.Extension):
         return combine.combine_files(files, context.get('request'))
 
 register.tag(Combine)
+

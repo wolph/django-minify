@@ -26,13 +26,7 @@ variable. These settings can be overwritten by modifying the Django settings
 #])
 
 '''The inline javascript template to use'''
-#JS_INLINE = '''
-#<script type="text/javascript" charset="utf-8">
-#/* <![CDATA[ */
-#%s
-#/* ]]> */
-#</script>
-#'''
+#JS_INLINE = '''%s'''
 
 '''The linked javascript template to use'''
 #JS_INCLUDE = '''
@@ -40,11 +34,7 @@ variable. These settings can be overwritten by modifying the Django settings
 #'''
 
 '''The inline css template to use'''
-#CSS_INLINE = '''<style media="all">
-#/* <![CDATA[ */
-#%s
-#/* ]]> */
-#</style>'''
+#CSS_INLINE = '''%s'''
 
 '''The linked css template to use'''
 #CSS_INCLUDE = '''
